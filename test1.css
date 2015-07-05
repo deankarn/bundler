@@ -1,9 +1,0 @@
-a{
-	display:block;
-}
-
-include(test2.css)
-
-a.hide{
-	display:none;
-}

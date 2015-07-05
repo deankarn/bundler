@@ -79,6 +79,10 @@ func (l *lexer) emit(t itemType) {
 	l.start = l.pos
 }
 
+func (l *lexer) reposition() {
+	l.start = l.pos
+}
+
 // errorf returns an error token and terminates the scan by passing
 // back a nil pointer that will be the next state, terminating l.nextItem.
 func (l *lexer) errorf(format string, args ...interface{}) stateFn {
@@ -148,7 +152,8 @@ func lexText(l *lexer) stateFn {
 // lexLeftDelim scans the left delimiter, which is known to be present.
 func lexLeftDelim(l *lexer) stateFn {
 	l.pos += Pos(len(l.leftDelim))
-	l.emit(itemLeftDelim)
+	// l.emit(itemLeftDelim)
+	l.reposition()
 	l.parenDepth = 0
 	return lexFilename
 }
@@ -156,15 +161,14 @@ func lexLeftDelim(l *lexer) stateFn {
 // lexRightDelim scans the right delimiter, which is known to be present.
 func lexRightDelim(l *lexer) stateFn {
 	l.pos += Pos(len(l.rightDelim))
-	l.emit(itemRightDelim)
+	// l.emit(itemRightDelim)
+	l.reposition()
 	return lexText
 }
 
-// lexInsideAction scans the elements inside action delimiters.
+// lexFilename scans the elements inside action delimiters.
 func lexFilename(l *lexer) stateFn {
-	//quoted string
-	//Spaces separate arguments; runs of spaces turn into itemSpace.
-	//
+
 	if strings.HasPrefix(l.input[l.pos:], l.rightDelim) {
 		if l.parenDepth == 0 {
 			l.emit(itemFile)

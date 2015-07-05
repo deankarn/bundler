@@ -10,6 +10,17 @@ import (
 	"testing"
 )
 
+// NOTES:
+// - Run "go test" to run tests
+// - Run "gocov test | gocov report" to report on test converage by file
+// - Run "gocov test | gocov annotate -" to report on all code and functions, those ,marked with "MISS" were never called
+//
+// or
+//
+// -- may be a good idea to change to output path to somewherelike /tmp
+// go test -coverprofile cover.out && go tool cover -html=cover.out -o cover.html
+//
+
 func IsEqual(t *testing.T, val1, val2 interface{}) bool {
 	v1 := reflect.ValueOf(val1)
 	v2 := reflect.ValueOf(val2)
@@ -103,38 +114,37 @@ func PanicMatchesSkip(t *testing.T, skip int, fn func(), matches string) {
 	fn()
 }
 
-func TestBundlingValidation(t *testing.T) {
-	input, err := ioutil.ReadFile("test1.css")
+func TestByFile(t *testing.T) {
+	results := bytes.NewBuffer([]byte{})
+
+	err := ByFile("files/test1.css", results)
+	Equal(t, err, nil)
+}
+
+func TestByIo(t *testing.T) {
+	input, err := ioutil.ReadFile("files/test1.css")
 	if err != nil {
 		panic(err)
 	}
-
-	// b := []byte(input)
 
 	results := bytes.NewBuffer([]byte{})
 
-	Bundle(bytes.NewReader(input), results)
-
-	// fmt.Println("Results:", results)
+	err = ByIo(bytes.NewReader(input), "files", results)
+	Equal(t, err, nil)
 }
 
-func BenchmarkFromFileSpeed(b *testing.B) {
+func BenchmarkByFile(b *testing.B) {
 
 	for n := 0; n < b.N; n++ {
-		input, err := ioutil.ReadFile("test1.css")
-		if err != nil {
-			panic(err)
-		}
-
 		results := bytes.NewBuffer([]byte{})
 
-		Bundle(bytes.NewReader(input), results)
+		ByFile("files/test1.css", results)
 	}
 }
 
-func BenchmarkFromExistingSpeed(b *testing.B) {
+func BenchmarkByIo(b *testing.B) {
 
-	input, err := ioutil.ReadFile("test1.css")
+	input, err := ioutil.ReadFile("files/test1.css")
 	if err != nil {
 		panic(err)
 	}
@@ -143,6 +153,6 @@ func BenchmarkFromExistingSpeed(b *testing.B) {
 
 		results := bytes.NewBuffer([]byte{})
 
-		Bundle(bytes.NewReader(input), results)
+		ByIo(bytes.NewReader(input), "files", results)
 	}
 }
